@@ -1,0 +1,7 @@
+Folder PATH listing
+Volume serial number is 72F4-F09B
+C:.
+|   l_structure.txt
+|   
++---ai_logs
+\---system_logs

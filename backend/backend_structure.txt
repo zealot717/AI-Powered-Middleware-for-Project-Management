@@ -1,0 +1,102 @@
+Folder PATH listing
+Volume serial number is 72F4-F09B
+C:.
+backend
+|   aerospace.db
+|   main.py
+|   __init__.py
+|   
++---ai_models
+|   |   optimize_resources.py
+|   |   predict_delays.py
+|   |   risk_analysis.py
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           optimize_resources.cpython-313.pyc
+|           predict_delays.cpython-313.pyc
+|           __init__.cpython-313.pyc
+|           
++---api
+|   |   routes.py
+|   |   schemas.py
+|   |   
+|   \---__pycache__
+|           routes.cpython-313.pyc
+|           schemas.cpython-313.pyc
+|           
++---celery_tasks
+|   |   ai_tasks.py
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           ai_tasks.cpython-313.pyc
+|           __init__.cpython-313.pyc
+|           
++---database
+|   |   db_connection.py
+|   |   db_init.py
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           db_connection.cpython-313.pyc
+|           __init__.cpython-313.pyc
+|           
++---models
+|   |   models.py
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           models.cpython-313.pyc
+|           __init__.cpython-313.pyc
+|           
++---services
+|   |   resource_allocation.py
+|   |   risk_management.py
+|   |   
+|   \---__pycache__
+|           resource_allocation.cpython-313.pyc
+|           risk_management.cpython-313.pyc
+|           
+\---__pycache__
+        main.cpython-313.pyc
+        __init__.cpython-313.pyc
+        
+config
+|   ai_config.py
+|   api_config.py
+|   celery_config.py
+|   config_structure.txt
+|   db_config.py
+|   sap_config.py
+|   
+\---__pycache__
+        sap_config.cpython-313.pyc
+
+middleware
+|   ai_engine.py
+|   data_pipeline.py
+|   sap_connector.py
+|   __init__.py
+|   
+\---__pycache__
+        ai_engine.cpython-313.pyc
+        sap_connector.cpython-313.pyc
+        __init__.cpython-313.pyc
+scripts       
+    deploy.sh
+tests
+|   test_ai_models.py
+|   test_api.py
+|   test_sap_integration.py
+|   __init__.py
+|   
+\---__pycache__
+        test_sap_integration.cpython-313.pyc
+        __init__.cpython-313.pyc
+logs       |   
++---ai_logs
+\---system_logs
+
+frontend
+//containsfrontend directoryy

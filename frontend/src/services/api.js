@@ -1,11 +1,21 @@
-import axios from 'axios';
+const API_BASE_URL = "http://localhost:8000";
 
-const API_URL = "http://127.0.0.1:8000";
-
-export const predictDelay = async (data) => {
-    return axios.post(`${API_URL}/predict_delay/`, data);
+export const fetchProjects = async () => {
+    const response = await fetch(`${API_BASE_URL}/projects`);
+    return response.json();
 };
 
-export const allocateResources = async (data) => {
-    return axios.post(`${API_URL}/allocate_resources/`, data);
+export const fetchProjectDetails = async (id) => {
+    const response = await fetch(`${API_BASE_URL}/projects/${id}`);
+    return response.json();
+};
+
+export const fetchResources = async () => {
+    const response = await fetch(`${API_BASE_URL}/resources`);
+    return response.json();
+};
+
+export const fetchRiskAnalysis = async () => {
+    const response = await fetch(`${API_BASE_URL}/risk-analysis`);
+    return response.json();
 };

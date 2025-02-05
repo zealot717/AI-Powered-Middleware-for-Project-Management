@@ -1,25 +1,32 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import axios from 'axios';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [time, setTime] = useState('');
+    const [resources, setResources] = useState('');
+    const [prediction, setPrediction] = useState(null);
+
+    const handlePredict = async () => {
+        try {
+            const response = await axios.post('http://127.0.0.1:8000/predict_cost', {
+                time: parseFloat(time),
+                resources: parseFloat(resources)
+            });
+            setPrediction(response.data.predicted_cost);
+        } catch (error) {
+            console.error("Error fetching prediction:", error);
+        }
+    };
+
+    return (
+        <div>
+            <h1>AI-Powered Project Cost Predictor</h1>
+            <input type="number" placeholder="Time (weeks)" value={time} onChange={(e) => setTime(e.target.value)} />
+            <input type="number" placeholder="Resources" value={resources} onChange={(e) => setResources(e.target.value)} />
+            <button onClick={handlePredict}>Predict Cost</button>
+            {prediction && <h2>Estimated Cost: ${prediction}</h2>}
+        </div>
+    );
 }
 
 export default App;

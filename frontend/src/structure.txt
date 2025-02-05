@@ -1,0 +1,25 @@
+Folder PATH listing
+Volume serial number is 72F4-F09B
+C:.
+|   App.css
+|   App.js
+|   App.test.js
+|   index.css
+|   index.js
+|   logo.svg
+|   reportWebVitals.js
+|   setupTests.js
+|   structure.txt
+|   
++---components
+|       Dashboard.js
+|       ResourceView.js
+|       RiskAlerts.js
+|       
++---pages
+|       Home.js
+|       ProjectDetail.js
+|       
+\---services
+        api.js
+        

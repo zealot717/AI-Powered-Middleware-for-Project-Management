@@ -1,19 +1,31 @@
-from fastapi import FastAPI
-from backend.services.resource_allocation import allocate_resources
-from ai_models.predict_delays import predict_delays
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from database.db_connection import get_db
+from models.models import OptimizedResourceAllocation, RiskAssessmentResults
+from middleware.ai_engine import process_optimized_allocation, process_risk_assessment
 
-app = FastAPI()
+router = APIRouter()
 
-@app.get("/")
-def home():
-    return {"message": "AI Middleware API is running"}
+@router.post("/run_optimization/{project_id}")
+def run_optimization(project_id: str, db: Session = Depends(get_db)):
+    """Triggers AI optimization for a project."""
+    process_optimized_allocation(project_id)
+    return {"message": "Optimization completed and stored in the database."}
 
-@app.post("/allocate_resources/")
-def allocate(data: dict):
-    result = allocate_resources(data)
-    return {"allocation": result}
+@router.post("/run_risk_assessment/{project_id}")
+def run_risk_assessment(project_id: str, db: Session = Depends(get_db)):
+    """Triggers AI risk assessment for a project."""
+    process_risk_assessment(project_id)
+    return {"message": "Risk assessment completed and stored in the database."}
 
-@app.post("/predict_delay/")
-def predict(data: dict):
-    prediction = predict_delays(data)
-    return {"predicted_delay": prediction}
+@router.get("/get_optimized_resources/{project_id}")
+def get_optimized_resources(project_id: str, db: Session = Depends(get_db)):
+    """Fetches AI-optimized resource allocation for a project."""
+    results = db.query(OptimizedResourceAllocation).filter_by(project_id=project_id).all()
+    return results
+
+@router.get("/get_risk_assessment/{project_id}")
+def get_risk_assessment(project_id: str, db: Session = Depends(get_db)):
+    """Fetches AI-generated risk assessment results for a project."""
+    result = db.query(RiskAssessmentResults).filter_by(project_id=project_id).first()
+    return result
