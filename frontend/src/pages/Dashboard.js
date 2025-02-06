@@ -8,9 +8,10 @@ import useFetch from "../hooks/useFetch";
 import { API_BASE_URL } from "../services/api";
 
 const Dashboard = () => {
-  const { data: projects, loading } = useFetch(`${API_BASE_URL}/projects`);
+  const { data: projects, loading, error } = useFetch("/projects");
 
   if (loading) return <p className="text-center text-gray-500">Loading...</p>;
+  if (error) return <p className="text-center text-red-500">Error loading projects. Please try again.</p>;
 
   return (
     <div className="flex h-screen">

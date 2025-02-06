@@ -13,6 +13,7 @@ class Project(Base):
     status = Column(String, nullable=False)
     budget = Column(Float, nullable=False)
 
+
 class Task(Base):
     __tablename__ = "tasks"
     task_id = Column(String, primary_key=True)

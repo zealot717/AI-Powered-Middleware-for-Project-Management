@@ -1,37 +1,8 @@
-/*import { useState, useEffect } from "react";
-import axios from "axios";
-import { API_BASE_URL } from "../services/api";
-
-const useFetch = (endpoint) => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}${endpoint}`);
-        setData(response.data);
-      } catch (err) {
-        console.error("API fetch error:", err);
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [endpoint]);
-
-  return { data, loading, error };
-};
-
-export default useFetch;*/
 import { useState, useEffect } from "react";
 import api from "../services/api";
 
 const useFetch = (endpoint) => {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -39,7 +10,7 @@ const useFetch = (endpoint) => {
     const fetchData = async () => {
       try {
         const response = await api.get(endpoint);
-        setData(response.data);
+        setData(response.data || []); // Ensures empty array if no data is returned
       } catch (err) {
         console.error("API fetch error:", err);
         setError(err);
@@ -47,6 +18,7 @@ const useFetch = (endpoint) => {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [endpoint]);
 
@@ -54,5 +26,3 @@ const useFetch = (endpoint) => {
 };
 
 export default useFetch;
-
-

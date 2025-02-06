@@ -1,68 +1,6 @@
-/*import axios from "axios";
-
-export const API_BASE_URL = "http://localhost:8000/api"; // Ensure this matches backend
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-export const fetchProjects = async () => {
-  try {
-    const response = await api.get("/projects");
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching projects:", error);
-    return [];
-  }
-};
-
-export const fetchOptimizedResources = async (projectId) => {
-  try {
-    const response = await api.get(`/get_optimized_resources/${projectId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching optimized resources:", error);
-    return null;
-  }
-};
-
-export const fetchRiskAssessment = async (projectId) => {
-  try {
-    const response = await api.get(`/get_risk_assessment/${projectId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching risk assessment:", error);
-    return null;
-  }
-};
-
-export const triggerOptimization = async (projectId) => {
-  try {
-    const response = await api.post(`/run_optimization/${projectId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error triggering optimization:", error);
-    return null;
-  }
-};
-
-export const triggerRiskAssessment = async (projectId) => {
-  try {
-    const response = await api.post(`/run_risk_assessment/${projectId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error triggering risk assessment:", error);
-    return null;
-  }
-};
-
-export default api;*/
 import axios from "axios";
 
-export const API_BASE_URL = "http://localhost:8000/api"; // Ensure this matches backend
+export const API_BASE_URL = "http://localhost:8000/api"; // Ensure correct API base URL
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -81,44 +19,36 @@ export const fetchProjects = async () => {
   }
 };
 
-export const fetchOptimizedResources = async (projectId) => {
+export const fetchAIAnalysis = async () => {
   try {
-    const response = await api.get(`/projects/${projectId}/optimized-resources`);
+    const response = await api.get("/ai-analysis");
     return response.data;
   } catch (error) {
-    console.error("Error fetching optimized resources:", error);
-    return null;
+    console.error("Error fetching AI analysis:", error);
+    return { optimizedAllocations: [], riskPrediction: "No data" };
   }
 };
 
-export const fetchRiskAssessment = async (projectId) => {
+export const fetchRiskAnalysis = async () => {
   try {
-    const response = await api.get(`/projects/${projectId}/risk-assessment`);
+    const response = await api.get("/risk-analysis");
     return response.data;
   } catch (error) {
-    console.error("Error fetching risk assessment:", error);
-    return null;
+    console.error("Error fetching risk analysis:", error);
+    return [];
+  }
+};
+export const fetchAllocations = async () => {
+  try {
+    const response = await api.get("/allocations");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching allocations:", error);
+    return [];
   }
 };
 
-export const triggerOptimization = async (projectId) => {
-  try {
-    const response = await api.post(`/projects/${projectId}/run-optimization`);
-    return response.data;
-  } catch (error) {
-    console.error("Error triggering optimization:", error);
-    return null;
-  }
-};
-
-export const triggerRiskAssessment = async (projectId) => {
-  try {
-    const response = await api.post(`/projects/${projectId}/run-risk-assessment`);
-    return response.data;
-  } catch (error) {
-    console.error("Error triggering risk assessment:", error);
-    return null;
-  }
-};
 
 export default api;
+
+

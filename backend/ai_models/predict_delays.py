@@ -23,7 +23,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from sqlalchemy.orm import Session
-from backend.models.models import Task
+from models.models import Task
 import random
 
 class DQN(nn.Module):
