@@ -28,7 +28,7 @@ const useFetch = (endpoint) => {
 
 export default useFetch;*/
 import { useState, useEffect } from "react";
-import api, { API_BASE_URL } from "../services/api";
+import api from "../services/api";
 
 const useFetch = (endpoint) => {
   const [data, setData] = useState(null);
@@ -38,11 +38,11 @@ const useFetch = (endpoint) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get(endpoint); // Ensure correct endpoint format
+        const response = await api.get(endpoint);
         setData(response.data);
       } catch (err) {
         console.error("API fetch error:", err);
-        setError("Error loading data. Please try again later.");
+        setError(err);
       } finally {
         setLoading(false);
       }
@@ -54,4 +54,5 @@ const useFetch = (endpoint) => {
 };
 
 export default useFetch;
+
 

@@ -7,9 +7,11 @@ import { API_BASE_URL } from "../services/api";
 
 const ProjectDetails = () => {
   const { id } = useParams();
-  const { data: project, loading } = useFetch(`${API_BASE_URL}/projects/${id}`);
+  const { data: project, loading, error } = useFetch(`${API_BASE_URL}/projects/${id}`);
 
   if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error loading project details: {error.message}</p>;
+  if (!project) return <p>Project details not available.</p>;
 
   return (
     <div className="flex">
@@ -21,7 +23,7 @@ const ProjectDetails = () => {
         <p><strong>Deadline:</strong> {project.deadline}</p>
         <p><strong>Risk Level:</strong> {project.riskLevel}</p>
         <h2 className="text-xl font-semibold mt-6">AI Recommendations</h2>
-        <p>{project.aiRecommendation}</p>
+        <p>{project.aiRecommendation || "No AI recommendations available."}</p>
       </div>
     </div>
   );
