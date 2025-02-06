@@ -1,5 +1,5 @@
 import json
-import mock_sap
+from mock_sap import fetch_mock_sap_data
 
 def get_oauth_token():
     """
