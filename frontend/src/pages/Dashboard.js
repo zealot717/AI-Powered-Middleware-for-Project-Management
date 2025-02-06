@@ -8,78 +8,46 @@ import useFetch from "../hooks/useFetch";
 import { API_BASE_URL } from "../services/api";
 
 const Dashboard = () => {
-  const { data: projects, loading, error } = useFetch(`${API_BASE_URL}/projects`);
+  const { data: projects, loading } = useFetch(`${API_BASE_URL}/projects`);
 
-  // Handle loading state
-  if (loading) {
-    return (
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-1 p-6">
-          <Navbar />
-          <p>Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Handle API errors
-  if (error) {
-    return (
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-1 p-6">
-          <Navbar />
-          <p className="text-red-500">Error loading projects. Please try again later.</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Ensure projects is an array before mapping
-  const projectList = projects || [];
+  if (loading) return <p className="text-center text-gray-500">Loading...</p>;
 
   return (
-    <div className="flex">
+    <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 bg-gray-50">
         <Navbar />
-        <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
 
         {/* Projects Section */}
-        {projectList.length > 0 ? (
+        <section>
+          <h2 className="text-xl font-semibold mb-2">Projects</h2>
           <div className="grid grid-cols-3 gap-4">
-            {projectList.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
+            {projects.length > 0 ? (
+              projects.map((project) => <ProjectCard key={project.id} project={project} />)
+            ) : (
+              <p className="text-gray-500">No projects available.</p>
+            )}
           </div>
-        ) : (
-          <p className="text-gray-500">No projects available.</p>
-        )}
+        </section>
 
-        {/* Risk Overview Section */}
-        <div className="mt-6">
+        {/* Risk Overview */}
+        <section className="mt-6">
           <h2 className="text-xl font-semibold">Risk Overview</h2>
-          {projectList.length > 0 ? (
-            <div className="grid grid-cols-3 gap-4">
-              {projectList.map((project) => (
-                <RiskCard key={project.id} project={project} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No risk data available.</p>
-          )}
-        </div>
+          <div className="grid grid-cols-3 gap-4">
+            {projects.length > 0 ? (
+              projects.map((project) => <RiskCard key={project.id} project={project} />)
+            ) : (
+              <p className="text-gray-500">No risk data available.</p>
+            )}
+          </div>
+        </section>
 
-        {/* Resource Allocation Section */}
-        <div className="mt-6">
+        {/* Resource Allocation */}
+        <section className="mt-6">
           <h2 className="text-xl font-semibold">Resource Allocation</h2>
-          {projectList.length > 0 ? (
-            <AllocationChart data={projectList} />
-          ) : (
-            <p className="text-gray-500">No allocation data available.</p>
-          )}
-        </div>
+          <AllocationChart data={projects} />
+        </section>
       </div>
     </div>
   );

@@ -1,12 +1,11 @@
-import sys
-import os
+from sqlalchemy.orm import Session
+from .db_connection import engine, Base
 
-# Ensure the backend directory is in the system path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+def create_tables():
+    """Creates all tables if they don't exist."""
+    print("Creating database tables...")
+    Base.metadata.create_all(bind=engine)
+    print("Tables created successfully!")
 
-from database.db_connection import engine, Base
-
-# Create all tables
-Base.metadata.create_all(bind=engine)
-
-print("Database tables created successfully!")
+if __name__ == "__main__":
+    create_tables()

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from database.db_connection import get_db
 from models.models import Project
 from services.resource_allocation import allocate_resources
-from services.risk_management import analyze_risks
+from services.risk_management import predict_project_risks
 
 router = APIRouter()
 
@@ -30,5 +30,23 @@ def allocate_resources_endpoint(db: Session = Depends(get_db)):
 # Trigger AI risk prediction
 @router.post("/predict-risks")
 def predict_risks_endpoint(db: Session = Depends(get_db)):
-    risks = analyze_risks(db)
+    risks = predict_project_risks(db)
     return {"message": "Risk prediction completed", "risks": risks}
+
+
+@router.get("/ai-analysis")
+def get_ai_analysis(db: Session = Depends(get_db)):
+    try:
+        result = allocate_resources(db)  # Ensure this function is implemented
+        return {"optimizedAllocations": result["allocations"], "riskPrediction": result["risks"]}
+    except Exception as e:
+        return {"error": str(e)}
+    
+@router.get("/risk-analysis")
+def get_risk_analysis():
+    return {"risks": ["Budget Overruns", "Schedule Delays", "Resource Shortages"]}
+
+@router.get("/allocations")
+def get_allocations():
+    return {"allocations": [{"project_id": 1, "resources": "Engineers: 5, Analysts: 3"}]}
+
