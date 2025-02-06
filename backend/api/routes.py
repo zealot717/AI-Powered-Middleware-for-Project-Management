@@ -1,31 +1,34 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database.db_connection import get_db
-from models.models import OptimizedResourceAllocation, RiskAssessmentResults
-from middleware.ai_engine import process_optimized_allocation, process_risk_assessment
+from models.models import Project
+from services.resource_allocation import allocate_resources
+from services.risk_management import analyze_risks
 
 router = APIRouter()
 
-@router.post("/run_optimization/{project_id}")
-def run_optimization(project_id: str, db: Session = Depends(get_db)):
-    """Triggers AI optimization for a project."""
-    process_optimized_allocation(project_id)
-    return {"message": "Optimization completed and stored in the database."}
+# Get all projects
+@router.get("/projects")
+def get_projects(db: Session = Depends(get_db)):
+    projects = db.query(Project).all()
+    return projects
 
-@router.post("/run_risk_assessment/{project_id}")
-def run_risk_assessment(project_id: str, db: Session = Depends(get_db)):
-    """Triggers AI risk assessment for a project."""
-    process_risk_assessment(project_id)
-    return {"message": "Risk assessment completed and stored in the database."}
+# Get a single project by ID
+@router.get("/projects/{project_id}")
+def get_project(project_id: int, db: Session = Depends(get_db)):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        return {"error": "Project not found"}
+    return project
 
-@router.get("/get_optimized_resources/{project_id}")
-def get_optimized_resources(project_id: str, db: Session = Depends(get_db)):
-    """Fetches AI-optimized resource allocation for a project."""
-    results = db.query(OptimizedResourceAllocation).filter_by(project_id=project_id).all()
-    return results
+# Trigger AI resource allocation
+@router.post("/allocate")
+def allocate_resources_endpoint(db: Session = Depends(get_db)):
+    allocation = allocate_resources(db)
+    return {"message": "Resource allocation completed", "allocation": allocation}
 
-@router.get("/get_risk_assessment/{project_id}")
-def get_risk_assessment(project_id: str, db: Session = Depends(get_db)):
-    """Fetches AI-generated risk assessment results for a project."""
-    result = db.query(RiskAssessmentResults).filter_by(project_id=project_id).first()
-    return result
+# Trigger AI risk prediction
+@router.post("/predict-risks")
+def predict_risks_endpoint(db: Session = Depends(get_db)):
+    risks = analyze_risks(db)
+    return {"message": "Risk prediction completed", "risks": risks}

@@ -1,8 +1,0 @@
-Folder PATH listing
-Volume serial number is 72F4-F09B
-C:.
-    deploy.sh
-    s_structure.txt
-    
-No subfolders exist 
-

@@ -1,0 +1,657 @@
+Folder PATH listing
+Volume serial number is 72F4-F09B
+C:.
+backend
+|   aerospace.db
+|   main.py
+from fastapi import FastAPI
+from api.routes import router
+
+app = FastAPI()
+
+# Register API routes
+app.include_router(router)
+
+@app.get("/")
+def home():
+    return {"message": "Aerospace Resource Optimization API"}
+|   __init__.py
+|   
++---ai_models
+|   |   optimize_resources.py
+import random
+
+def optimize_project_resources(project):
+    """Optimize resource allocation for a given project."""
+    available_resources = project.allocated_resources
+
+    if not available_resources:
+        return {"ProjectID": project.id, "OptimizedResources": []}
+
+    optimized_allocation = [
+        {"ResourceID": res["ResourceID"], "Efficiency": random.uniform(0.7, 1.0)}
+        for res in available_resources
+    ]
+
+    return {"ProjectID": project.id, "OptimizedResources": optimized_allocation}
+|   |   predict_delays.py
+import random
+from backend.models.models import Task
+from sqlalchemy.orm import Session
+
+def predict_delay_risk(tasks):
+    risk_predictions = {}
+
+    for task in tasks:
+        risk = random.uniform(0, 1)  # Random risk probability (placeholder)
+        risk_predictions[task.id] = risk
+
+    return risk_predictions
+
+def analyze_risks(db: Session):
+    tasks = db.query(Task).all()
+    risks = predict_delay_risk(tasks)
+
+    db.commit()  
+    return risks
+|   |   risk_analysis.py
+import random
+
+def assess_project_risk(project):
+    """Assess project risk based on budget, timeline, and complexity."""
+    budget_factor = 1 if project.budget > 5_000_000 else 0.7
+    timeline_factor = 1 if project.status == "On Track" else 0.6
+    complexity_factor = random.uniform(0.5, 1.0)
+
+    risk_score = round((budget_factor * timeline_factor * complexity_factor) * 100, 2)
+
+    return risk_score
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           optimize_resources.cpython-313.pyc
+|           predict_delays.cpython-313.pyc
+|           __init__.cpython-313.pyc
+|           
++---api
+|   |   routes.py
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from database.db_connection import get_db
+from models.models import OptimizedResourceAllocation, RiskAssessmentResults
+from middleware.ai_engine import process_optimized_allocation, process_risk_assessment
+
+router = APIRouter()
+
+@router.post("/run_optimization/{project_id}")
+def run_optimization(project_id: str, db: Session = Depends(get_db)):
+    """Triggers AI optimization for a project."""
+    process_optimized_allocation(project_id)
+    return {"message": "Optimization completed and stored in the database."}
+
+@router.post("/run_risk_assessment/{project_id}")
+def run_risk_assessment(project_id: str, db: Session = Depends(get_db)):
+    """Triggers AI risk assessment for a project."""
+    process_risk_assessment(project_id) 
+    return {"message": "Risk assessment completed and stored in the database."}
+
+@router.get("/get_optimized_resources/{project_id}")
+def get_optimized_resources(project_id: str, db: Session = Depends(get_db)):
+    """Fetches AI-optimized resource allocation for a project."""
+    results = db.query(OptimizedResourceAllocation).filter_by(project_id=project_id).all()
+    return results
+
+@router.get("/get_risk_assessment/{project_id}")
+def get_risk_assessment(project_id: str, db: Session = Depends(get_db)):
+    """Fetches AI-generated risk assessment results for a project."""
+    result = db.query(RiskAssessmentResults).filter_by(project_id=project_id).first()
+    return result
+|   |   schemas.py
+from pydantic import BaseModel
+from typing import List, Optional
+
+class TaskBase(BaseModel):
+    name: str
+    status: Optional[str] = "pending"
+
+class TaskCreate(TaskBase):
+    project_id: int
+
+class Task(TaskBase):
+    id: int
+    project_id: int
+
+    class Config:
+        from_attributes = True
+
+class TaskDependencyBase(BaseModel):
+    task_id: int
+    depends_on_task_id: int
+
+class TaskDependency(TaskDependencyBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+|   |   
+|   \---__pycache__
+|           routes.cpython-313.pyc
+|           schemas.cpython-313.pyc
+|           
++---celery_tasks
+|   |   ai_tasks.py
+from celery import Celery
+from database.db_connection import SessionLocal
+from services.resource_allocation import allocate_resources
+from services.risk_management import predict_project_risks
+
+celery = Celery("tasks", broker="redis://localhost:6379/0")
+
+@celery.task
+def async_allocate_resources():
+    db = SessionLocal()
+    allocation = allocate_resources(db)
+    db.close()
+    return allocation
+
+@celery.task
+def async_predict_risks():
+    db = SessionLocal()
+    risks = predict_project_risks(db)
+    db.close()
+    return risks
+|   |   __init__.py
+import sys
+import os
+
+# Ensure Celery finds modules
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+|   |   
+|   \---__pycache__
+|           ai_tasks.cpython-313.pyc
+|           __init__.cpython-313.pyc
+|           
++---database
+|   |   db_connection.py
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+# SQLite database URL
+DATABASE_URL = "sqlite:///./aerospace.db"
+
+# Create database engine
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
+# ORM session factory
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Base class for models
+Base = declarative_base()
+
+def get_db():
+    """Dependency to get a new database session."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+|   |   db_init.py
+import sys
+import os
+
+# Ensure the backend directory is in the system path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from database.db_connection import engine, Base
+
+# Create all tables
+Base.metadata.create_all(bind=engine)
+
+print("Database tables created successfully!")
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           db_connection.cpython-313.pyc
+|           __init__.cpython-313.pyc
++---middleware
+|   ai_engine.py
+from database.db_connection import SessionLocal
+from models.models import OptimizedResourceAllocation, RiskAssessmentResults
+from backend.ai_models.optimize_resources import optimize_resources
+from backend.ai_models.risk_analysis import assess_project_risk
+
+def process_optimized_allocation(project_id):
+    """Runs AI optimization and stores results in the database."""
+    session = SessionLocal()
+    try:
+        optimized_results = optimize_resources(project_id)
+        for result in optimized_results:
+            allocation = OptimizedResourceAllocation(
+                project_id=project_id,
+                resource_id=result["resource_id"],
+                allocated_hours=result["allocated_hours"],
+                efficiency_score=result["efficiency_score"]
+            )
+            session.add(allocation)
+        session.commit()
+    finally:
+        session.close()
+
+def process_risk_assessment(project_id):
+    """Runs AI risk assessment and stores results in the database."""
+    session = SessionLocal()
+    try:
+        risk_score, risk_factors = assess_project_risk(project_id)
+        risk_entry = RiskAssessmentResults(
+            project_id=project_id,
+            risk_score=risk_score,
+            risk_factors=", ".join(risk_factors)
+        )
+        session.add(risk_entry)
+        session.commit()
+    finally:
+        session.close()
+|   data_pipeline.py
+from sap_connector import get_oauth_token, get_sap_data
+from backend.database import db_connection
+from backend.models import models
+def initialize_database():
+    """
+    Creates database tables if they do not exist.
+    """
+    db_connection.Base.metadata.create_all(bind=db_connection.engine)
+
+def load_mock_data():
+    """
+    Extracts mock SAP data, transforms it, and loads it into the database.
+    """
+    token = get_oauth_token()
+    sap_data = get_sap_data(token, "projects")
+    
+    session = db_connection.SessionLocal()
+    try:
+        for project in sap_data:
+            project_entry = models.Project(
+                id=project["ProjectID"],
+                name=project["ProjectName"],
+                start_date=project["StartDate"],
+                end_date=project["EndDate"],
+                status=project["Status"],
+                budget=project["Budget"]
+            )
+            session.add(project_entry)
+            
+            for resource in project["AllocatedResources"]:
+                resource_entry = models.Resource(
+                    id=resource["ResourceID"],
+                    name=resource["Name"],
+                    role=resource["Role"],
+                    availability=resource["Availability"],
+                    project_id=project["ProjectID"]
+                )
+                session.add(resource_entry)
+            
+            for task in project["Tasks"]:
+                task_entry = models.Task(
+                    id=task["TaskID"],
+                    name=task["TaskName"],
+                    start_date=task["StartDate"],
+                    end_date=task["EndDate"],
+                    assigned_resource_id=task["AssignedResource"],
+                    project_id=project["ProjectID"]
+                )
+                session.add(task_entry)
+        
+        session.commit()
+        print("Mock data successfully loaded into the database.")
+    except Exception as e:
+        session.rollback()
+        print(f"Error loading data: {e}")
+    finally:
+        session.close()
+
+if __name__ == "__main__":
+    initialize_database()
+    load_mock_data()
+|   sap_connector.py
+import json
+import mock_sap
+
+def get_oauth_token():
+    """
+    Simulates retrieving an OAuth token.
+    Since we are using mock data, return a static token.
+    """
+    return "mock_oauth_token_12345"
+
+def get_sap_data(token: str, endpoint: str):
+    """
+    Simulates fetching data from SAP using mock data.
+    :param token: OAuth token (not used in mock version)
+    :param endpoint: The endpoint to fetch data from
+    :return: Mock SAP data in JSON format
+    """
+    if token != "mock_oauth_token_12345":
+        raise ValueError("Invalid OAuth token")
+    
+    if endpoint == "projects":
+        return fetch_mock_sap_data()
+    else:
+        raise ValueError(f"Unsupported endpoint: {endpoint}")
+
+if __name__ == "__main__":
+    token = get_oauth_token()
+    sap_data = get_sap_data(token, "projects")
+    print(json.dumps(sap_data, indent=4))
+|   mock_sap.py
+import json
+import random
+from datetime import datetime, timedelta
+from database.db_connection import SessionLocal
+from models.models import Project, Resource, Task
+
+def generate_mock_sap_projects(num_projects=5):
+    """Generates mock SAP project management data resembling real SAP structures."""
+    projects = []
+    for i in range(1, num_projects + 1):
+        start_date = datetime.now() - timedelta(days=random.randint(30, 180))
+        end_date = start_date + timedelta(days=random.randint(30, 365))
+        project = {
+            "ProjectID": f"P-{1000 + i}",
+            "ProjectName": f"Aerospace Project {i}",
+            "StartDate": start_date.strftime("%Y-%m-%d"),
+            "EndDate": end_date.strftime("%Y-%m-%d"),
+            "Status": random.choice(["Planned", "In Progress", "Completed"]),
+            "Budget": round(random.uniform(1_000_000, 10_000_000), 2),
+            "AllocatedResources": generate_mock_resources(random.randint(3, 10)),
+            "Tasks": generate_mock_tasks(random.randint(5, 15), start_date, end_date)
+        }
+        projects.append(project)
+    return projects
+
+def generate_mock_resources(num_resources):
+    """Generates mock aerospace project resources."""
+    roles = ["Engineer", "Scientist", "Technician", "Analyst", "Project Manager"]
+    return [
+        {
+            "ResourceID": f"R-{1000 + i}",
+            "Name": f"Resource {i}",
+            "Role": random.choice(roles),
+            "Availability": random.randint(50, 100)
+        }
+        for i in range(num_resources)
+    ]
+
+def generate_mock_tasks(num_tasks, start_date, end_date):
+    """Generates mock aerospace project tasks."""
+    return [
+        {
+            "TaskID": f"T-{1000 + i}",
+            "TaskName": f"Task {i}",
+            "StartDate": (start_date + timedelta(days=random.randint(0, (end_date - start_date).days // 2))).strftime("%Y-%m-%d"),
+            "EndDate": (start_date + timedelta(days=random.randint((end_date - start_date).days // 2, (end_date - start_date).days))).strftime("%Y-%m-%d"),
+            "AssignedResource": f"R-{1000 + random.randint(1, 20)}"
+        }
+        for i in range(num_tasks)
+    ]
+
+def store_mock_data_in_db():
+    """Stores mock SAP data into the database."""
+    session = SessionLocal()
+    mock_projects = generate_mock_sap_projects()
+    for project in mock_projects:
+        db_project = Project(
+            project_id=project["ProjectID"],
+            project_name=project["ProjectName"],
+            start_date=project["StartDate"],
+            end_date=project["EndDate"],
+            status=project["Status"],
+            budget=project["Budget"]
+        )
+        session.add(db_project)
+        for resource in project["AllocatedResources"]:
+            db_resource = Resource(
+                resource_id=resource["ResourceID"],
+                name=resource["Name"],
+                role=resource["Role"],
+                availability=resource["Availability"],
+                project_id=db_project.project_id
+            )
+            session.add(db_resource)
+        for task in project["Tasks"]:
+            db_task = Task(
+                task_id=task["TaskID"],
+                task_name=task["TaskName"],
+                start_date=task["StartDate"],
+                end_date=task["EndDate"],
+                assigned_resource=task["AssignedResource"],
+                project_id=db_project.project_id
+            )
+            session.add(db_task)
+    session.commit()
+    session.close()
+
+def fetch_mock_sap_data():
+    """Simulates API fetch for SAP project data by returning mock data."""
+    return generate_mock_sap_projects()
+
+if __name__ == "__main__":
+    store_mock_data_in_db()
+    mock_data = fetch_mock_sap_data()
+    print(json.dumps(mock_data, indent=4))
+|   sap_actual.py
+import requests
+from config.sap_config import SAP_CLIENT_ID, SAP_CLIENT_SECRET, SAP_TOKEN_URL
+
+def get_oauth_token():
+    """
+    Retrieves an OAuth token using the client credentials.
+    """
+    payload = {
+        'grant_type': 'client_credentials',
+        'client_id': SAP_CLIENT_ID,
+        'client_secret': SAP_CLIENT_SECRET
+    }
+    
+    response = requests.post(SAP_TOKEN_URL, data=payload)
+    
+    if response.status_code == 200:
+        token_data = response.json()
+        return token_data['access_token']
+    else:
+        raise Exception(f"Failed to get OAuth token: {response.status_code} - {response.text}")
+    
+def get_sap_data(oauth_token, endpoint):
+    """
+    Makes a GET request to the SAP API using the OAuth token.
+    
+    Args:
+        oauth_token (str): The OAuth token for authorization.
+        endpoint (str): The specific SAP API endpoint to hit (e.g., project data, resource allocation).
+        
+    Returns:
+        dict: The response data from the SAP API.
+    """
+    headers = {'Authorization': f'Bearer {oauth_token}'}
+    url = f'{SAP_API_BASE_URL}/{endpoint}'  # Construct the full URL for the SAP endpoint
+    
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Failed to fetch data from SAP API: {response.status_code} - {response.text}")
+|   __init__.py
+|   
+\---__pycache__
+        ai_engine.cpython-313.pyc
+        sap_connector.cpython-313.pyc
+        __init__.cpython-313.pyc
+|
++---models
+|   |   models.py
+from sqlalchemy import Column, String, Float, Integer, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+
+Base = declarative_base()
+
+class Project(Base):
+    __tablename__ = "projects"
+    project_id = Column(String, primary_key=True)
+    project_name = Column(String, nullable=False)
+    start_date = Column(String, nullable=False)
+    end_date = Column(String, nullable=False)
+    status = Column(String, nullable=False)
+    budget = Column(Float, nullable=False)
+
+class Task(Base):
+    __tablename__ = "tasks"
+    task_id = Column(String, primary_key=True)
+    task_name = Column(String, nullable=False)
+    start_date = Column(String, nullable=False)
+    end_date = Column(String, nullable=False)
+    assigned_resource = Column(String, nullable=False)
+    project_id = Column(String, ForeignKey("projects.project_id"))
+    project = relationship("Project")
+
+class Resource(Base):
+    __tablename__ = "resources"
+    resource_id = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    availability = Column(Integer, nullable=False)
+    project_id = Column(String, ForeignKey("projects.project_id"))
+    project = relationship("Project")
+
+class OptimizedResourceAllocation(Base):
+    __tablename__ = "optimized_resource_allocation"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    project_id = Column(String, ForeignKey("projects.project_id"), nullable=False)
+    resource_id = Column(String, ForeignKey("resources.resource_id"), nullable=False)
+    allocated_hours = Column(Float, nullable=False)
+    efficiency_score = Column(Float, nullable=False)
+    project = relationship("Project")
+    resource = relationship("Resource")
+
+class RiskAssessmentResults(Base):
+    __tablename__ = "risk_assessment_results"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    project_id = Column(String, ForeignKey("projects.project_id"), nullable=False)
+    risk_score = Column(Float, nullable=False)
+    risk_factors = Column(String, nullable=False)
+    project = relationship("Project")
+
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           models.cpython-313.pyc
+|           __init__.cpython-313.pyc
+|           
++---services
+|   |   resource_allocation.py
+from sqlalchemy.orm import Session
+from ai_models.optimize_resources import optimize_resource_allocation
+
+def allocate_resources(db: Session):
+    return optimize_resource_allocation(db)
+|   |   risk_management.py
+from sqlalchemy.orm import Session
+from ai_models.predict_delays import analyze_risks
+
+def predict_project_risks(db: Session):
+    return analyze_risks(db)
+|   |   
+|   \---__pycache__
+|           resource_allocation.cpython-313.pyc
+|           risk_management.cpython-313.pyc
+|           
+\---__pycache__
+        main.cpython-313.pyc
+        __init__.cpython-313.pyc        
+config
+|   ai_config.py
+|   api_config.py
+|   celery_config.py
+from celery import Celery
+
+celery = Celery(
+    "aerospace_ai",
+    broker="redis://localhost:6379/0",
+    backend="redis://localhost:6379/0"
+)
+|   config_structure.txt
+|   db_config.py
+|   sap_config.py
+# config/sap_config.py
+
+# SAP API credentials (from SAP API Hub)
+SAP_CLIENT_ID = 'your-client-id'  # Replace with your actual SAP Client ID
+SAP_CLIENT_SECRET = 'your-client-secret'  # Replace with your actual SAP Client Secret
+SAP_TOKEN_URL = 'https://auth.sapeventscenter.com/oauth/token'  # Token URL for OAuth authentication
+SAP_API_BASE_URL = 'https://api.sap.com/odata'  # Base URL for SAP OData API
+|   
+\---__pycache__
+        sap_config.cpython-313.pyc
+scripts       
+    deploy.sh
+tests
+|   test_ai_models.py
+|   test_api.py
+import requests
+
+BASE_URL = "http://127.0.0.1:8000"
+
+def test_api():
+    response = requests.get(f"{BASE_URL}/projects")
+    assert response.status_code == 200, "API should return 200 OK"
+    
+    data = response.json()
+    assert isinstance(data, list), "Response should be a list"
+    
+    print("API Test Passed!")
+
+if __name__ == "__main__":
+    test_api()
+
+|   test_sap_integration.py
+# tests/test_sap_integration.py
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from middleware.sap_connector import get_oauth_token, get_sap_data
+from middleware.ai_engine import run_ai_logic
+
+def test_oauth_token():
+    """Test if OAuth token retrieval works"""
+    token = get_oauth_token()
+    assert token is not None, "Failed to retrieve OAuth token"
+    print("OAuth token successfully retrieved!")
+
+def test_sap_api_integration():
+    """Test if SAP API integration is successful"""
+    token = get_oauth_token()
+    project_data = get_sap_data(token, 'projects')  # Fetch the specific endpoint data
+    assert project_data is not None, "Failed to retrieve project data from SAP"
+    print("SAP API successfully integrated, project data fetched.")
+
+def test_ai_integration():
+    """Test the entire flow, from SAP data to AI model execution"""
+    results = run_ai_logic()
+    assert results is not None, "AI model execution failed"
+    print("AI model successfully executed, results returned.")
+
+if __name__ == "__main__":
+    test_oauth_token()
+    test_sap_api_integration()
+    test_ai_integration()
+|   __init__.py
+|   
+\---__pycache__
+        test_sap_integration.cpython-313.pyc
+        __init__.cpython-313.pyc
+logs       |   
++---ai_logs
+\---system_logs
+

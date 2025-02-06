@@ -1,5 +1,5 @@
 import random
-from backend.models.models import Task
+from models.models import Task
 from sqlalchemy.orm import Session
 
 def predict_delay_risk(tasks):

@@ -57,6 +57,16 @@ backend
 |   \---__pycache__
 |           resource_allocation.cpython-313.pyc
 |           risk_management.cpython-313.pyc
++---middleware
+|   ai_engine.py
+|   data_pipeline.py
+|   sap_connector.py
+|   __init__.py
+|   
+\---__pycache__
+        ai_engine.cpython-313.pyc
+        sap_connector.cpython-313.pyc
+        __init__.cpython-313.pyc
 |           
 \---__pycache__
         main.cpython-313.pyc
@@ -73,16 +83,7 @@ config
 \---__pycache__
         sap_config.cpython-313.pyc
 
-middleware
-|   ai_engine.py
-|   data_pipeline.py
-|   sap_connector.py
-|   __init__.py
-|   
-\---__pycache__
-        ai_engine.cpython-313.pyc
-        sap_connector.cpython-313.pyc
-        __init__.cpython-313.pyc
+
 scripts       
     deploy.sh
 tests
@@ -98,5 +99,30 @@ logs       |
 +---ai_logs
 \---system_logs
 
-frontend
-//containsfrontend directoryy
+frontend/
+│── public/               # Static assets (logos, icons, etc.)
+│── src/
+│   ├── components/       # Reusable UI components
+│   │   ├── Navbar.js     
+│   │   ├── Sidebar.js    
+│   │   ├── ProjectCard.js
+│   │   ├── RiskCard.js   
+│   │   ├── AllocationChart.js  
+│   │   ├── Table.js      
+│   │   ├── Button.js     
+│   ├── pages/            # Main page views
+│   │   ├── Dashboard.js
+│   │   ├── Projects.js
+│   │   ├── ProjectDetails.js
+│   │   ├── AIAnalysis.js
+│   │   ├── RiskAnalysis.js
+│   │   ├── Allocations.js
+│   ├── services/         # API calls to backend
+│   │   ├── api.js  
+│   ├── hooks/            # Custom React hooks
+│   │   ├── useFetch.js  
+│   ├── App.js            # Main app entry point
+│   ├── index.js          # ReactDOM render entry
+│── tailwind.config.js    # Tailwind setup
+│── package.json          # Dependencies
+│── README.md             # Project info

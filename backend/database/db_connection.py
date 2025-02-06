@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from models.models import Base  # Import the Base class to create tables
 
 # SQLite database URL
 DATABASE_URL = "sqlite:///./aerospace.db"
@@ -20,3 +21,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
+def create_tables():
+    """Create database tables if they do not exist."""
+    Base.metadata.create_all(bind=engine)
